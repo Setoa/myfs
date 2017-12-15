@@ -382,13 +382,16 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	int i=0;
 	sprintf(fullpaths[0],"%s%s",global_context.driveA,path);
 	sprintf(fullpaths[1],"%s%s",global_context.driveB,path);
-	while((temp_res=pread(fd,fuse_buf,STRSIZE,offset)))
+	while(1)
 	{
 		if(temp_res==-1) return -errno;
 		const char* fullpath=fullpaths[i++%2];
  	 	fd = open(fullpath, O_RDONLY);
  	 	if (fd == -1)
  	 	  return -errno;
+		temp_res=pread(fd,fuse_buf,STRSIZE,offset);
+		if(temp_res==-1) return -errno;
+		if(temp_res==0) break;
 		strncat(buf,fuse_buf,temp_res);
  		close(fd);
 		res+=temp_res;
